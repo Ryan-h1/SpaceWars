@@ -20,17 +20,17 @@ This is a repository for a java-based video game called Space Wars I made in Hig
     familiarize yourself with the game.
 
 # Structure
-    "Graphics" Folder:
-        Contains the .png graphics used in this video game.
-    "Sound" Folder:
-        Contains the .wav sound effects used in this video game.
-    "SourceCode" Folder:
-        Contains the source code of this video game.
-    "WorkLog" Folder:
-        Contains the work logs for this video game, completed over a one week period.
-    "README.md":
-        This current file.
-    "SpaceWars.jar"
-        The .jar program that can be run by the user by double clicking it.
-    "SpaceWarsManual.pdf":
-        The pdf manual for this video game.
+### "Graphics" Folder
+Contains the .png graphics used in this video game.
+### "Sound" Folder
+Contains the .wav sound effects used in this video game.
+### "SourceCode" Folder
+Contains the source code of this video game.
+### "WorkLog" Folder
+Contains the work logs for this video game, completed over a one week period.
+### "README.md"
+This current file.
+### "SpaceWars.jar"
+The .jar program that can be run by the user by double clicking it.
+### "SpaceWarsManual.pdf"
+The pdf manual for this video game.
