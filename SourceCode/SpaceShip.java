@@ -13,6 +13,7 @@ import java.awt.geom.*;
 import javax.swing.ImageIcon;
 import java.util.*;
 import java.awt.image.ImageObserver;
+import java.io.IOException;
 
 public class SpaceShip {
   
@@ -52,9 +53,31 @@ public class SpaceShip {
    * Loads an image from the ./Graphics folder.
    */
   private void loadImage() {
-    ImageIcon icon = new ImageIcon("./Graphics/SpaceShipImage.png");
-    image = icon.getImage();
+      try {
+          String basePath = System.getProperty("user.dir");
+          String imagePath = "";
+
+          if (basePath.endsWith("SourceCode")) {
+              imagePath = basePath + "/../Graphics/SpaceShipImage.png";
+          } else if (basePath.endsWith("src")) {
+              imagePath = basePath + "/../Graphics/SpaceShipImage.png";
+          } else {
+              imagePath = basePath + "/Graphics/SpaceShipImage.png";
+          }
+
+          ImageIcon icon = new ImageIcon(imagePath);
+          image = icon.getImage();
+
+          if (image.getWidth(null) == -1 || image.getHeight(null) == -1) {
+              throw new IOException("Invalid image dimensions: Width and height must be non-zero.");
+          }
+
+      } catch (NullPointerException | IOException e) {
+          System.err.println("Error loading the SpaceShip image: " + e.getMessage());
+          System.exit(1);
+      }
   }
+
   
   /*
    * Instantiates a new projectile and returns it

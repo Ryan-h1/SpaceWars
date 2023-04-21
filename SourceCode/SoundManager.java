@@ -11,23 +11,23 @@
  * This class belongs to Peter Meijer and is being used under the S.A.M. use policy.
  * 
  */
-public class SoundManager
-{ 
-  // audio objects and files
-  AudioPlayer fireLaser = new AudioPlayer("Sound/fireLaser.wav");
-  AudioPlayer darudeSandstorm = new AudioPlayer("Sound/darudeSandstorm.wav");
-  AudioPlayer alienDeath = new AudioPlayer("Sound/alienDeath.wav");
-  AudioPlayer alienFireLaser = new AudioPlayer("Sound/alienFireLaser.wav");
-  AudioPlayer alienHitButNotKilled = new AudioPlayer("Sound/alienHitButNotKilled.wav");
-  AudioPlayer newWave = new AudioPlayer("Sound/newWave.wav");
-  AudioPlayer machineGunPowerUp = new AudioPlayer("Sound/machineGunPowerUp.wav");
-  AudioPlayer speedBoostPowerUp = new AudioPlayer("Sound/speedBoostPowerUp.wav");
-  AudioPlayer forceFieldPowerUp = new AudioPlayer("Sound/forceFieldPowerUp.wav");
-  AudioPlayer machineGunPowerUpDeActivated = new AudioPlayer("Sound/machineGunPowerUpDeActivated.wav");
-  AudioPlayer speedBoostPowerUpDeActivated = new AudioPlayer("Sound/speedBoostPowerUpDeActivated.wav");
-  AudioPlayer forceFieldPowerUpDeActivated = new AudioPlayer("Sound/forceFieldPowerUpDeActivated.wav");
-  AudioPlayer oof = new AudioPlayer("Sound/oof.wav");
-  AudioPlayer loudOof = new AudioPlayer("Sound/loudOof.wav");
-  AudioPlayer win = new AudioPlayer("Sound/win.wav");
-  
+public class SoundManager 
+{
+    // audio objects and files
+    AudioPlayer fireLaser = new AudioPlayer("fireLaser.wav");
+    AudioPlayer darudeSandstorm = new AudioPlayer("darudeSandstorm.wav");
+    AudioPlayer alienDeath = new AudioPlayer("alienDeath.wav");
+    AudioPlayer alienFireLaser = new AudioPlayer("alienFireLaser.wav");
+    AudioPlayer alienHitButNotKilled = new AudioPlayer("alienHitButNotKilled.wav");
+    AudioPlayer newWave = new AudioPlayer("newWave.wav");
+    AudioPlayer machineGunPowerUp = new AudioPlayer("machineGunPowerUp.wav");
+    AudioPlayer speedBoostPowerUp = new AudioPlayer("speedBoostPowerUp.wav");
+    AudioPlayer forceFieldPowerUp = new AudioPlayer("forceFieldPowerUp.wav");
+    AudioPlayer machineGunPowerUpDeActivated = new AudioPlayer("machineGunPowerUpDeActivated.wav");
+    AudioPlayer speedBoostPowerUpDeActivated = new AudioPlayer("speedBoostPowerUpDeActivated.wav");
+    AudioPlayer forceFieldPowerUpDeActivated = new AudioPlayer("forceFieldPowerUpDeActivated.wav");
+    AudioPlayer oof = new AudioPlayer("oof.wav");
+    AudioPlayer loudOof = new AudioPlayer("loudOof.wav");
+    AudioPlayer win = new AudioPlayer("win.wav");
 }
+

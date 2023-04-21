@@ -73,104 +73,48 @@ public class Game extends JFrame implements ActionListener, KeyListener {
    * Constructor
    */
   public Game() {
-   
-    // initiliaze some game variables
-    timer = new Timer(REFRESH_MILLI, this);
-    random = new Random();
-    keyList = new ArrayList<String>();
-    sm = new SoundManager();
-    u = new Utilities();
-    gameState = "MAIN_MENU";
-    spawnLevel = 1;
-   
-     // Add panel to the JFrame
-    Container content = getContentPane();
-    content.setLayout(null);
-   
-    // initialize the canvas and dimensions
-    canvas = new DrawCanvas();
-    // I don't know why the w requires this + 2 to reach original dimensions,
-    // but the game is broken without it.
-    canvas.setBounds(0,0,CANVAS_WIDTH + 2, CANVAS_HEIGHT);
-    content.add(canvas);
-    
-    // setup Instructions button
-    instructionsBtn = new JButton("Instructions");
-    instructionsBtn.addActionListener(this);
-    instructionsBtn.setBounds(CANVAS_WIDTH/2 - 75, CANVAS_HEIGHT/2, 150, 30);
-    content.add(instructionsBtn);
-           
-    // setup Start button
-    playBtn = new JButton("Start");
-    playBtn.addActionListener(this);
-    playBtn.setBounds(CANVAS_WIDTH/2 - 75, CANVAS_HEIGHT/2 - 100, 150, 30);
-    content.add(playBtn);
-    
-    // setup Exit button
-    exitBtn = new JButton("Exit");
-    exitBtn.addActionListener(this);
-    exitBtn.setBounds(CANVAS_WIDTH/2 - 75, CANVAS_HEIGHT/2 + 100, 150, 30);
-    content.add(exitBtn);
-    
-    // setup Back button to display in the INSTRUCTIONS menu
-    backBtn = new JButton("Back");
-    backBtn.addActionListener(this);
-    backBtn.setBounds(100, CANVAS_HEIGHT - 100, 100, 30);
-    content.add(backBtn);
-    
-    // setup ingame menu restart button
-    restartBtn = new JButton("Restart");
-    restartBtn.addActionListener(this);
-    restartBtn.setBounds(CANVAS_WIDTH/2 - 250, CANVAS_HEIGHT/2, 100, 30);
-    content.add(restartBtn);
-    
-    // setup ingame menu back to main menu button
-    mainMenuBtn = new JButton("Main Menu");
-    mainMenuBtn.addActionListener(this);
-    mainMenuBtn.setBounds(CANVAS_WIDTH/2 - 75, CANVAS_HEIGHT/2 , 150, 30);
-    content.add(mainMenuBtn);
-    
-    // setup ingame menu exit button
-    exitBtn2 = new JButton("Exit");
-    exitBtn2.addActionListener(this);
-    exitBtn2.setBounds(CANVAS_WIDTH/2 + 150, CANVAS_HEIGHT/2, 100, 30);
-    content.add(exitBtn2);
-     
-    // add a keylistener to the frame
-    addKeyListener(this);
-    
-    // make all of the buttons transparent
-    playBtn.setOpaque(false);
-    playBtn.setContentAreaFilled(false);
-    playBtn.setBorderPainted(false);
-    instructionsBtn.setOpaque(false);
-    instructionsBtn.setContentAreaFilled(false);
-    instructionsBtn.setBorderPainted(false);
-    exitBtn.setOpaque(false);
-    exitBtn.setContentAreaFilled(false);
-    exitBtn.setBorderPainted(false);
-    backBtn.setOpaque(false);
-    backBtn.setContentAreaFilled(false);
-    backBtn.setBorderPainted(false);
-    restartBtn.setOpaque(false);
-    restartBtn.setContentAreaFilled(false);
-    restartBtn.setBorderPainted(false);
-    mainMenuBtn.setOpaque(false);
-    mainMenuBtn.setContentAreaFilled(false);
-    mainMenuBtn.setBorderPainted(false);
-    exitBtn2.setOpaque(false);
-    exitBtn2.setContentAreaFilled(false);
-    exitBtn2.setBorderPainted(false);
-   
-    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    // I don't know why the w and h need the + 7 and + 30, but setting the layout to null
-    // requires it to be put here to keep original dimensions.
-    setPreferredSize(new Dimension(CANVAS_WIDTH + 7, CANVAS_HEIGHT + 30));
-   
-    setResizable(false);
-   
-    pack();
-    setVisible(true);
+
+      // Initialize some game variables
+      timer = new Timer(REFRESH_MILLI, this);
+      random = new Random();
+      keyList = new ArrayList<>();
+      sm = new SoundManager();
+      gameState = "MAIN_MENU";
+      spawnLevel = 1;
+
+      // Configure JFrame
+      setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      setPreferredSize(new Dimension(CANVAS_WIDTH + 7, CANVAS_HEIGHT + 30));
+      setResizable(false);
+      addKeyListener(this);
+
+      // Initialize the canvas and dimensions
+      canvas = new DrawCanvas();
+      canvas.setBounds(0, 0, CANVAS_WIDTH + 2, CANVAS_HEIGHT);
+
+      // Initialize and configure buttons
+      instructionsBtn = createButton("Instructions", CANVAS_WIDTH / 2 - 75, CANVAS_HEIGHT / 2);
+      playBtn = createButton("Start", CANVAS_WIDTH / 2 - 75, CANVAS_HEIGHT / 2 - 100);
+      exitBtn = createButton("Exit", CANVAS_WIDTH / 2 - 75, CANVAS_HEIGHT / 2 + 100);
+      backBtn = createButton("Back", 100, CANVAS_HEIGHT - 100);
+      restartBtn = createButton("Restart", CANVAS_WIDTH / 2 - 250, CANVAS_HEIGHT / 2);
+      mainMenuBtn = createButton("Main Menu", CANVAS_WIDTH / 2 - 75, CANVAS_HEIGHT / 2);
+      exitBtn2 = createButton("Exit", CANVAS_WIDTH / 2 + 150, CANVAS_HEIGHT / 2);
+
+      // Add components to the JFrame
+      Container content = getContentPane();
+      content.setLayout(null);
+      content.add(canvas);
+      content.add(instructionsBtn);
+      content.add(playBtn);
+      content.add(exitBtn);
+      content.add(backBtn);
+      content.add(restartBtn);
+      content.add(mainMenuBtn);
+      content.add(exitBtn2);
+
+      pack();
+      setVisible(true);
   }
   
   /*
@@ -544,45 +488,51 @@ public class Game extends JFrame implements ActionListener, KeyListener {
    * Calculates collisions and sets the visibilities of objects accordingly
    */
   public void checkCollisions() {
-    
-    // check collison of playerProjectiles with aliens
-    for (Projectile projectile : playerProjectiles) {
-      for (Alien alien : aliens) {
-        if (u.detectCollision(projectile.getOuterHitBox(), alien.getOuterHitBox())) {
-          projectile.setVisibility(false);
-          alien.decrementLives(1);
-          if (alien.getLives() <= 0) {
-            alien.setVisibility(false);
-          }
-          else {
-            sm.alienHitButNotKilled.play();
-          }
-        }
-      }
-    }
-    
-    // check collision of alienProjectiles with player
-    for (Projectile projectile : alienProjectiles) {
-      if (u.detectCollision(spaceShip.getInnerCenterHitBox(), projectile.getOuterHitBox()) ||
-          u.detectCollision(spaceShip.getInnerRearHitBox(), projectile.getOuterHitBox())) {
-        if (spaceShip.getLives() > 1) {
-          sm.oof.play();
-        }
-        projectile.setVisibility(false);
-        spaceShip.removeLives(1);
-      }
-    }
-    
-    // check collisions of powerUps with player
-    for (PowerUp powerUp : powerUps) {
-      if (u.detectCollision(spaceShip.getInnerCenterHitBox(), powerUp.getOuterHitBox()) ||
-          u.detectCollision(spaceShip.getInnerRearHitBox(), powerUp.getOuterHitBox())) {
-        spaceShip.activatePowerUp(powerUp);
-        powerUp.playActivationSound(sm);
-        powerUp.setVisibility(false);
-      }
-    }
+      checkPlayerProjectileCollisions();
+      checkAlienProjectileCollisions();
+      checkPowerUpCollisions();
   }
+
+  private void checkPlayerProjectileCollisions() {
+      for (Projectile projectile : playerProjectiles) {
+          for (Alien alien : aliens) {
+              if (u.detectCollision(projectile.getOuterHitBox(), alien.getOuterHitBox())) {
+                  projectile.setVisibility(false);
+                  alien.decrementLives(1);
+                  if (alien.getLives() <= 0) {
+                      alien.setVisibility(false);
+                  } else {
+                      sm.alienHitButNotKilled.play();
+                  }
+              }
+          }
+      }
+  }
+
+  private void checkAlienProjectileCollisions() {
+      for (Projectile projectile : alienProjectiles) {
+          if (u.detectCollision(spaceShip.getInnerCenterHitBox(), projectile.getOuterHitBox()) ||
+              u.detectCollision(spaceShip.getInnerRearHitBox(), projectile.getOuterHitBox())) {
+              if (spaceShip.getLives() > 1) {
+                  sm.oof.play();
+              }
+              projectile.setVisibility(false);
+              spaceShip.removeLives(1);
+          }
+      }
+  }
+
+  private void checkPowerUpCollisions() {
+      for (PowerUp powerUp : powerUps) {
+          if (u.detectCollision(spaceShip.getInnerCenterHitBox(), powerUp.getOuterHitBox()) ||
+              u.detectCollision(spaceShip.getInnerRearHitBox(), powerUp.getOuterHitBox())) {
+              spaceShip.activatePowerUp(powerUp);
+              powerUp.playActivationSound(sm);
+              powerUp.setVisibility(false);
+          }
+      }
+  }
+
   
   /*
    * Uses a randomly generated double to create the chance to spawn a powerup.
@@ -756,6 +706,19 @@ public class Game extends JFrame implements ActionListener, KeyListener {
     g2d.drawString("to refresh your knowledge or to gain any further information that is not covered", 295, 601);
     g2d.drawString("here. That's all soldier, good luck on your mission.", 295, 621);
   }
+
+  /*
+   * Creates a button with the specified text, x and y coordinates and adds it to the JFrame.
+   */
+  private JButton createButton(String text, int x, int y) {
+      JButton button = new JButton(text);
+      button.addActionListener(this);
+      button.setBounds(x, y, 150, 30);
+      button.setOpaque(false);
+      button.setContentAreaFilled(false);
+      button.setBorderPainted(false);
+      return button;
+  }
   
   /**
    * Loads aliens into the ArrayList for the current spawnLevel
@@ -842,7 +805,7 @@ public class Game extends JFrame implements ActionListener, KeyListener {
     
   }
   
-  // -----------------------------------------------------------------------------
+  // -------------------------MAIN METHOD-----------------------------------------
   
   public static void main(String[] args) {
     

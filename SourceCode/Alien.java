@@ -18,6 +18,7 @@ import java.awt.*;
 import java.awt.geom.*; 
 import javax.swing.ImageIcon;
 import java.awt.image.ImageObserver;
+import java.io.IOException;
 
 public class Alien {
   
@@ -55,9 +56,32 @@ public class Alien {
    * Loads an image from the ./Graphics folder.
    */
   private void loadImage(String imageName) {
-    ImageIcon icon = new ImageIcon("./Graphics/" + imageName);
-    image = icon.getImage();
+      try {
+          String basePath = System.getProperty("user.dir");
+          String imagePath = "";
+
+          if (basePath.endsWith("SourceCode")) {
+              imagePath = basePath + "/../Graphics/" + imageName;
+          } else if (basePath.endsWith("src")) {
+              imagePath = basePath + "/../Graphics/" + imageName;
+          } else {
+              imagePath = basePath + "/Graphics/" + imageName;
+          }
+
+          ImageIcon icon = new ImageIcon(imagePath);
+          image = icon.getImage();
+
+          if (image.getWidth(null) == -1 || image.getHeight(null) == -1) {
+              throw new IOException("Invalid image dimensions: Width and height must be non-zero.");
+          }
+
+      } catch (NullPointerException | IOException e) {
+          System.err.println("Error loading the Alien image: " + e.getMessage());
+          System.exit(1);
+      }
   }
+
+
   
   /*
    * This method draws an image of this alien to the screen
