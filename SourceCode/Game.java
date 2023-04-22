@@ -26,23 +26,8 @@ import java.awt.geom.*;
 import java.util.*;
 import java.lang.*;
 
-public class Game extends JFrame implements ActionListener, KeyListener {
-  
-  // Constants
-  public static final int CANVAS_WIDTH = 1280;
-  public static final int CANVAS_HEIGHT = 960;
-  public static final int JPANEL_HEIGHT = 60;
-  public static final int REFRESH_MILLI = 8;
-  public static final double BASIC_ALIEN_CHANCE_OF_ATTACK = 0.0004;
-  public static final Color CANVAS_BACKGROUND = Color.BLACK;
-  public static final Color JPANEL_BACKGROUND = Color.WHITE;
-  public static final String L1 = "65"; // A
-  public static final String L2 = "37"; // LEFT ARROW KEY
-  public static final String R1 = "68"; // D
-  public static final String R2 = "39"; // RIGHT ARROW KEY
-  public static final String FIRE = "32"; // SPACE BAR
-  public static final String ENTER = "10"; // ENTER KEY
-  
+public class Game extends JFrame implements ActionListener, KeyListener, Constants {
+
   // The custom drawing canvas (extends JPanel)
   private DrawCanvas canvas;
   
@@ -116,7 +101,21 @@ public class Game extends JFrame implements ActionListener, KeyListener {
       pack();
       setVisible(true);
   }
+
+  /*
+   * Creates a button with the specified text, x and y coordinates and adds it to the JFrame.
+   */
+  private JButton createButton(String text, int x, int y) {
+      JButton button = new JButton(text);
+      button.addActionListener(this);
+      button.setBounds(x, y, 150, 30);
+      button.setOpaque(false);
+      button.setContentAreaFilled(false);
+      button.setBorderPainted(false);
+      return button;
+  }
   
+
   /*
    * Used to initialize any objects and variables specific to game logic to their default
    * values.
@@ -140,6 +139,7 @@ public class Game extends JFrame implements ActionListener, KeyListener {
     loadAliens();
   }
   
+
   /*
    * Used to update the next frame according to the current controls and previous frame's game
    * logic.
@@ -188,6 +188,7 @@ public class Game extends JFrame implements ActionListener, KeyListener {
     canvas.repaint();
   }
   
+
   /*
    * Handles key pressed events, adding the keys to an array
    */
@@ -198,6 +199,7 @@ public class Game extends JFrame implements ActionListener, KeyListener {
     }       
   }
   
+
   /*
    * Handles the key released events, removing the keys from an array
    */
@@ -209,7 +211,7 @@ public class Game extends JFrame implements ActionListener, KeyListener {
     }
     
     // this needs to be put here so that it does not constantly cycle between paused and playing
-    if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+    if (evt.getKeyCode() == KeyEvent.VK_ENTER || evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
       if (gameState.equals("PLAYING")) {
         gameState = "PAUSED";
         canvas.repaint();
@@ -707,18 +709,6 @@ public class Game extends JFrame implements ActionListener, KeyListener {
     g2d.drawString("here. That's all soldier, good luck on your mission.", 295, 621);
   }
 
-  /*
-   * Creates a button with the specified text, x and y coordinates and adds it to the JFrame.
-   */
-  private JButton createButton(String text, int x, int y) {
-      JButton button = new JButton(text);
-      button.addActionListener(this);
-      button.setBounds(x, y, 150, 30);
-      button.setOpaque(false);
-      button.setContentAreaFilled(false);
-      button.setBorderPainted(false);
-      return button;
-  }
   
   /**
    * Loads aliens into the ArrayList for the current spawnLevel
