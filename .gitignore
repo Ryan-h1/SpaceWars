@@ -1,0 +1,84 @@
+# General Java gitignore
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+
+# Package Files
+*.log
+*.properties
+*.xml
+*.yml
+*.yaml
+*.iml
+
+# Maven
+target/
+!src/main/resources/
+!src/main/java/
+!src/test/resources/
+!src/test/java/
+
+# Gradle
+.gradle/
+build/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# VS Code
+.vscode/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Mac OS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Log files
+*.log
+
+# Compiled binary files
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Coverage Reports
+*.lcov
+coverage/
+
+# Generated files
+*.generated
+generated/
+
+# Bytecode
+*.class
+
+# Java specific
+*.log
+*.pid
+*.hprof
+*.orig
+*.rej
+*.bak
+*.swp
+*.swo
+*.DS_Store
+
+# Temporary files
+*.tmp
+*.temp
