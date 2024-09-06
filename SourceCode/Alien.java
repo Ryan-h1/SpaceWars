@@ -24,10 +24,10 @@ public class Alien {
   
   private int x;
   private double y;
-  private int w;
-  private int h;
-  private int dx;
-  private double dy;
+  private final int w;
+  private final int h;
+  private final int dx;
+  private final double dy;
   private Image image;
   private boolean visible;
   private Rectangle2D.Double outerHitBox;
@@ -111,9 +111,8 @@ public class Alien {
    * Instantiates a new projectile and returns it. To be overridden by the subclass.
    */
   public Projectile fireProjectile() {
-    Projectile alienLaser = new Projectile(this.x + (int)(this.outerHitBox.getWidth()/2.0) - 2, (int)this.y-20,
+    return new Projectile(this.x + (int)(this.outerHitBox.getWidth()/2.0) - 2, (int) this.y-20,
                                       5, 20, Color.WHITE, -10);
-    return alienLaser;
   }
   
   /*

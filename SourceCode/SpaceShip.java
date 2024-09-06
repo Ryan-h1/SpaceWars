@@ -27,7 +27,7 @@ public class SpaceShip {
   private Rectangle2D.Double innerRearHitBox;
   private int fireDelayMillis;
   private int lives;
-  private ArrayList<PowerUp> equippedPowerUps;
+  private final ArrayList<PowerUp> equippedPowerUps;
   
   /*
    * Constructor for the SpaceShip. Note that the height and width are calculated through

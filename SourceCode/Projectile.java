@@ -16,12 +16,12 @@ import java.awt.geom.*;
 
 public class Projectile {
   
-  private Color color;
-  private int x;
+  private final Color color;
+  private final int x;
   private int y;
-  private int w;
-  private int h;
-  private int velocity;
+  private final int w;
+  private final int h;
+  private final int velocity;
   private boolean visible;
   private Rectangle2D.Double outerHitBox;
   

@@ -17,17 +17,17 @@ import java.io.IOException;
 
 public class PowerUp {
   
-  private int x;
+  private final int x;
   private int y;
-  private int w;
-  private int h;
-  private int dy;
+  private final int w;
+  private final int h;
+  private final int dy;
   private long timeActivated;
   private Image image;
   private boolean visible;
   private Rectangle2D.Double outerHitBox;
-  private String identifier;
-  private int duration;
+  private final String identifier;
+  private final int duration;
   
   /*
    * Constructor for the PowerUp class. Note that the height and width are calculated through
@@ -41,7 +41,7 @@ public class PowerUp {
     this.w = image.getWidth(null)/imageScaleDivisor;
     this.h = image.getHeight(null)/imageScaleDivisor;
     this.image = image.getScaledInstance(this.w, this.h, Image.SCALE_DEFAULT);
-    this.outerHitBox = new Rectangle2D.Double(this.x, (int)this.y, this.w, this.h);
+    this.outerHitBox = new Rectangle2D.Double(this.x, this.y, this.w, this.h);
     this.visible = true;
     this.identifier = identifier;
     this.duration = duration;

@@ -22,10 +22,9 @@ public class AdvancedAlien extends Alien {
    * Instantiates a new projectile and returns it
    */
   public Projectile fireProjectile() {
-    Projectile alienLaser = new Projectile(super.getX() + (int)(super.getOuterHitBox().getWidth()/2) - 1, 
-                                           (int)(super.getY() + super.getOuterHitBox().getHeight()), 
+    return new Projectile(super.getX() + (int)(super.getOuterHitBox().getWidth()/2) - 1,
+                                           (int)(super.getY() + super.getOuterHitBox().getHeight()),
                                            3, 30, Color.RED, 5);
-    return alienLaser;
   }
   
 }

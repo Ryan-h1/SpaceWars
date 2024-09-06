@@ -46,11 +46,7 @@ public final class Utilities {
    * This method accepts an int and returns a String representation in tick marks.
    */
   public static String toTicks(int n) {
-    String ticks = "";
-    for (int i = 0; i < n; i++) {
-      ticks += "|";
-    }
-    return ticks;
+    return "|".repeat(Math.max(0, n));
   }
   
 }

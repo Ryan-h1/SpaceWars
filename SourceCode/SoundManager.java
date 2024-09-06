@@ -14,20 +14,20 @@
 public class SoundManager 
 {
     // audio objects and files
-    AudioPlayer fireLaser = new AudioPlayer("fireLaser.wav");
-    AudioPlayer darudeSandstorm = new AudioPlayer("darudeSandstorm.wav");
-    AudioPlayer alienDeath = new AudioPlayer("alienDeath.wav");
-    AudioPlayer alienFireLaser = new AudioPlayer("alienFireLaser.wav");
-    AudioPlayer alienHitButNotKilled = new AudioPlayer("alienHitButNotKilled.wav");
-    AudioPlayer newWave = new AudioPlayer("newWave.wav");
-    AudioPlayer machineGunPowerUp = new AudioPlayer("machineGunPowerUp.wav");
-    AudioPlayer speedBoostPowerUp = new AudioPlayer("speedBoostPowerUp.wav");
-    AudioPlayer forceFieldPowerUp = new AudioPlayer("forceFieldPowerUp.wav");
-    AudioPlayer machineGunPowerUpDeActivated = new AudioPlayer("machineGunPowerUpDeActivated.wav");
-    AudioPlayer speedBoostPowerUpDeActivated = new AudioPlayer("speedBoostPowerUpDeActivated.wav");
-    AudioPlayer forceFieldPowerUpDeActivated = new AudioPlayer("forceFieldPowerUpDeActivated.wav");
-    AudioPlayer oof = new AudioPlayer("oof.wav");
-    AudioPlayer loudOof = new AudioPlayer("loudOof.wav");
-    AudioPlayer win = new AudioPlayer("win.wav");
+    final AudioPlayer fireLaser = new AudioPlayer("fireLaser.wav");
+    final AudioPlayer darudeSandstorm = new AudioPlayer("darudeSandstorm.wav");
+    final AudioPlayer alienDeath = new AudioPlayer("alienDeath.wav");
+    final AudioPlayer alienFireLaser = new AudioPlayer("alienFireLaser.wav");
+    final AudioPlayer alienHitButNotKilled = new AudioPlayer("alienHitButNotKilled.wav");
+    final AudioPlayer newWave = new AudioPlayer("newWave.wav");
+    final AudioPlayer machineGunPowerUp = new AudioPlayer("machineGunPowerUp.wav");
+    final AudioPlayer speedBoostPowerUp = new AudioPlayer("speedBoostPowerUp.wav");
+    final AudioPlayer forceFieldPowerUp = new AudioPlayer("forceFieldPowerUp.wav");
+    final AudioPlayer machineGunPowerUpDeActivated = new AudioPlayer("machineGunPowerUpDeActivated.wav");
+    final AudioPlayer speedBoostPowerUpDeActivated = new AudioPlayer("speedBoostPowerUpDeActivated.wav");
+    final AudioPlayer forceFieldPowerUpDeActivated = new AudioPlayer("forceFieldPowerUpDeActivated.wav");
+    final AudioPlayer oof = new AudioPlayer("oof.wav");
+    final AudioPlayer loudOof = new AudioPlayer("loudOof.wav");
+    final AudioPlayer win = new AudioPlayer("win.wav");
 }
 
