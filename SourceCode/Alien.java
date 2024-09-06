@@ -20,7 +20,7 @@ import javax.swing.ImageIcon;
 import java.awt.image.ImageObserver;
 import java.io.IOException;
 
-public class Alien {
+public class Alien implements GameObject {
   
   private int x;
   private double y;

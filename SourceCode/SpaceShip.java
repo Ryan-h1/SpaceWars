@@ -4,37 +4,37 @@
  * ICS4U1-1B
  * First Created: 2020-11-12
  * Last Edited: 2020-11-18
- * 
+ *
  * This is the class for the spaceship that is moved by the player.
  */
 
 import java.awt.*;
-import java.awt.geom.*; 
+import java.awt.geom.*;
 import javax.swing.ImageIcon;
 import java.util.*;
 import java.awt.image.ImageObserver;
 import java.io.IOException;
 
-public class SpaceShip {
-  
+public class SpaceShip implements GameObject {
+
   private int speed;
   private int x;
-  private int y;
-  private int w;
-  private int h;
+  private final int y;
+  private final int w;
+  private final int h;
   private Image image;
   private Rectangle2D.Double innerCenterHitBox;
   private Rectangle2D.Double innerRearHitBox;
   private int fireDelayMillis;
   private int lives;
   private final ArrayList<PowerUp> equippedPowerUps;
-  
+
   /*
    * Constructor for the SpaceShip. Note that the height and width are calculated through
    * a divisor as to avoid image stretching.
    */
-  public SpaceShip(int x, int y, int imageScaleDivisor, int speed, int fireDelayMillis, int lives) { 
-    
+  public SpaceShip(int x, int y, int imageScaleDivisor, int speed, int fireDelayMillis, int lives) {
+
     this.speed = speed;
     this.fireDelayMillis = fireDelayMillis;
     this.lives = lives;
@@ -44,11 +44,11 @@ public class SpaceShip {
     this.w = image.getWidth(null)/imageScaleDivisor;
     this.h = image.getHeight(null)/imageScaleDivisor;
     this.image = image.getScaledInstance(this.w, this.h, Image.SCALE_DEFAULT);
-    this.innerCenterHitBox = new Rectangle2D.Double(this.x + this.w/4 + 8, this.y, this.w/2 - 16, this.h);
-    this.innerRearHitBox = new Rectangle2D.Double(this.x + 6, this.y + this.h/2, this.w-12, this.h/2);
+    this.innerCenterHitBox = new Rectangle2D.Double(this.x + (double) this.w /4 + 8, this.y, (double) this.w /2 - 16, this.h);
+    this.innerRearHitBox = new Rectangle2D.Double(this.x + 6, this.y + (double) this.h /2, this.w-12, (double) this.h /2);
     this.equippedPowerUps = new ArrayList<PowerUp>();
   }
-  
+
   /*
    * Loads an image from the ./Graphics folder.
    */
@@ -78,16 +78,15 @@ public class SpaceShip {
       }
   }
 
-  
+
   /*
    * Instantiates a new projectile and returns it
    */
   public Projectile fireLaser() {
-    Projectile laser = new Projectile(this.x + (int)(this.innerRearHitBox.getWidth()/2.0) + 3, this.y-20,
+    return new Projectile(this.x + (int)(this.innerRearHitBox.getWidth()/2.0) + 3, this.y-20,
                                       5, 20, Color.WHITE, -10);
-    return laser;
   }
-  
+
   /*
    * Adds a powerUp to the ArrayList of equippedPowerUps and applies it's attributes
    */
@@ -103,7 +102,7 @@ public class SpaceShip {
     powerUp.activate(this);
     equippedPowerUps.add(powerUp);
   }
-  
+
   /*
    * Checks if any of the equipped powerups have worn off and deactivates them if they have
    */
@@ -126,7 +125,7 @@ public class SpaceShip {
       }
     }
   }
-  
+
   /*
    * Equips images for any powerUps
    */
@@ -139,17 +138,17 @@ public class SpaceShip {
       }
     }
   }
-  
+
   // Moves the SpaceShip horizontally
   public void moveLeft() {
     x -= speed;
-    this.innerCenterHitBox = new Rectangle2D.Double(this.x + this.w/4 + 8, this.y, this.w/2 - 16, this.h);
-    this.innerRearHitBox = new Rectangle2D.Double(this.x + 6, this.y + this.h/2, this.w-12, this.h/2);
+    this.innerCenterHitBox = new Rectangle2D.Double(this.x + (double) this.w /4 + 8, this.y, (double) this.w /2 - 16, this.h);
+    this.innerRearHitBox = new Rectangle2D.Double(this.x + 6, this.y + (double) this.h /2, this.w-12, (double) this.h /2);
   }
   public void moveRight() {
     x += speed;
-    this.innerCenterHitBox = new Rectangle2D.Double(this.x + this.w/4 + 8, this.y, this.w/2 - 16, this.h);
-    this.innerRearHitBox = new Rectangle2D.Double(this.x + 6, this.y + this.h/2, this.w-12, this.h/2);
+    this.innerCenterHitBox = new Rectangle2D.Double(this.x + (double) this.w /4 + 8, this.y, (double) this.w /2 - 16, this.h);
+    this.innerRearHitBox = new Rectangle2D.Double(this.x + 6, this.y + (double) this.h /2, this.w-12, (double) this.h /2);
   }
   /*
    * Sets the speed of the SpaceShip to the given speed in pixels
@@ -157,16 +156,16 @@ public class SpaceShip {
   public void setSpeed(int speed) {
     this.speed = speed;
   }
-  
+
   /*
    * Sets the fireDelay in milliseconds
    */
   public void setFireDelayMillis(int fireDelayMillis) {
     this.fireDelayMillis = fireDelayMillis;
   }
-  
+
   /*
-   * These seperate methods add or remove the number of lives passed to the method.
+   * These separate methods add or remove the number of lives passed to the method.
    * The addLives and removeLives functions are seperated into two methods to prevent
    * the use of negative values, simplifying the reusability of these methods.
    */
@@ -176,40 +175,53 @@ public class SpaceShip {
   public void removeLives(int lives) {
     this.lives -= lives;
   }
-  
+
   /*
    * Accessor methods:
    */
-  public int getX() { 
-    return x; 
+  public int getX() {
+    return x;
   }
-  public int getY() { 
-    return y; 
+  public int getY() {
+    return y;
   }
-  public int getW() { 
-    return w; 
+  public int getW() {
+    return w;
   }
-  public int getH() { 
-    return h; 
+  public int getH() {
+    return h;
   }
   public int getSpeed() {
-    return speed; 
+    return speed;
   }
-  public Image getImage() { 
-    return image; 
+  public Image getImage() {
+    return image;
   }
-  public Rectangle2D.Double getInnerCenterHitBox() { 
-    return innerCenterHitBox; 
+  public Rectangle2D.Double getInnerCenterHitBox() {
+    return innerCenterHitBox;
   }
   public Rectangle2D.Double getInnerRearHitBox() {
     return innerRearHitBox;
   }
-  public int getFireDelayMillis() { 
-    return fireDelayMillis; 
+  public int getFireDelayMillis() {
+    return fireDelayMillis;
   }
   public int getLives() {
     return lives;
   }
-  
-  
+
+  @Override
+  public Rectangle2D getOuterHitBox() {
+    double minX = Math.min(innerCenterHitBox.getX(), innerRearHitBox.getX());
+    double minY = Math.min(innerCenterHitBox.getY(), innerRearHitBox.getY());
+    double maxX = Math.max(innerCenterHitBox.getX() + innerCenterHitBox.getWidth(), innerRearHitBox.getX() + innerRearHitBox.getWidth());
+    double maxY = Math.max(innerCenterHitBox.getY() + innerCenterHitBox.getHeight(), innerRearHitBox.getY() + innerRearHitBox.getHeight());
+
+    return new Rectangle2D.Double(minX, minY, maxX - minX, maxY - minY);
+  }
+
+  @Override
+  public boolean isVisible() {
+    return true;
+  }
 }

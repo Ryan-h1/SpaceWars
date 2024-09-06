@@ -14,7 +14,7 @@
 import java.awt.*;
 import java.awt.geom.*; 
 
-public class Projectile {
+public class Projectile implements GameObject {
   
   private final Color color;
   private final int x;

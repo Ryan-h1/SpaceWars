@@ -32,6 +32,9 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
   // Set of all the keys that are currently pressed
   private final Set<String> keysPressed = new HashSet<>();
 
+  // Quadtree to store all objects
+  private final Quadtree quadtree = new Quadtree(0, new Rectangle(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT));
+
   // Containers for objects
   private List<Projectile> playerProjectiles;
   private List<Projectile> alienProjectiles;
@@ -163,10 +166,7 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
     randomlySpawnPowerUp();
 
     // update containers of objects
-    updateAliens();
-    updatePlayerProjectiles();
-    updateAlienProjectiles();
-    updatePowerUps();
+    updateGameObjects();
 
     // check the player's equipped power ups
     spaceShip.updateEquippedPowerUps(System.currentTimeMillis(), sm);
@@ -181,14 +181,10 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
   }
 
   /*
-   * Handles key pressed events, adding the keys to an array
+   * Handles key pressed events, adding the keys to a set
    */
   public void keyPressed(KeyEvent evt) {
-    // check if the key being pressed is in the list, if not add it to the list of currently pressed
-    // keys
-    if (!keysPressed.contains(evt.getKeyCode() + "")) {
-      keysPressed.add(evt.getKeyCode() + "");
-    }
+    keysPressed.add(evt.getKeyCode() + "");
   }
 
   /*
@@ -276,96 +272,107 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
 
       // --------------------------------------------- MAIN MENU
       // ---------------------------------------------
-      if (gameState.equals("MAIN_MENU")) {
-        g2d.setColor(Color.WHITE);
+      switch (gameState) {
+        case "MAIN_MENU" -> {
+          g2d.setColor(Color.WHITE);
 
-        // draw title
-        Utilities.drawCenteredString(
-            g,
-            "SPACE WARS",
-            CANVAS_WIDTH,
-            CANVAS_HEIGHT / 2,
-            new Font("Algerian", Font.ITALIC, 120));
-      }
-      // --------------------------------------------- INSTRUCTIONS
-      // ---------------------------------------------
-      else if (gameState.equals("INSTRUCTIONS")) {
-
-        drawInstructions(g2d);
-
-      }
-      // --------------------------------------------- PAUSED
-      // ---------------------------------------------
-      else if (gameState.equals("PAUSED")) {
-        g2d.setColor(Color.WHITE);
-        Utilities.drawCenteredString(
-            g, "PAUSED", CANVAS_WIDTH, CANVAS_HEIGHT / 2, new Font("Algerian", Font.PLAIN, 120));
-        Utilities.drawCenteredString(
-            g,
-            "Press ENTER to continue playing",
-            CANVAS_WIDTH,
-            CANVAS_HEIGHT / 4 * 3,
-            new Font("Courier", Font.PLAIN, 40));
-      }
-      // --------------------------------------------- GAME OVER
-      // ---------------------------------------------
-      else if (gameState.equals("GAME_OVER")) {
-        g2d.setColor(Color.WHITE);
-        Utilities.drawCenteredString(
-            g, "GAME OVER", CANVAS_WIDTH, CANVAS_HEIGHT / 2, new Font("Algerian", Font.PLAIN, 120));
-      }
-      // --------------------------------------------- GAME WON
-      // ---------------------------------------------
-      else if (gameState.equals("GAME_WON")) {
-        g2d.setColor(Color.WHITE);
-        Utilities.drawCenteredString(
-            g, "YOU WON", CANVAS_WIDTH, CANVAS_HEIGHT / 2, new Font("Algerian", Font.PLAIN, 120));
-      }
-      // --------------------------------------------- PLAYING
-      // ---------------------------------------------
-      else if (gameState.equals("PLAYING")) {
-
-        // draw the space ship and any equipped powerups
-        g2d.drawImage(spaceShip.getImage(), spaceShip.getX(), spaceShip.getY(), this);
-        spaceShip.drawEquippedPowerUps(g2d, this);
-
-        // draw the aliens
-        for (Alien alien : aliens) {
-          if (alien.isVisible()) {
-            alien.drawThisAlien(g2d, this);
-          }
+          // draw title
+          Utilities.drawCenteredString(
+              g,
+              "SPACE WARS",
+              CANVAS_WIDTH,
+              CANVAS_HEIGHT / 2,
+              new Font("Algerian", Font.ITALIC, 120));
         }
+          // --------------------------------------------- INSTRUCTIONS
+          // ---------------------------------------------
+        case "INSTRUCTIONS" -> drawInstructions(g2d);
 
-        // draw the player projectiles
-        for (Projectile projectile : playerProjectiles) {
-          if (projectile.isVisible()) {
-            projectile.drawMovingProjectile(g2d);
-          }
+          // --------------------------------------------- PAUSED
+          // ---------------------------------------------
+        case "PAUSED" -> {
+          g2d.setColor(Color.WHITE);
+          Utilities.drawCenteredString(
+              g, "PAUSED", CANVAS_WIDTH, CANVAS_HEIGHT / 2, new Font("Algerian", Font.PLAIN, 120));
+          Utilities.drawCenteredString(
+              g,
+              "Press ENTER to continue playing",
+              CANVAS_WIDTH,
+              CANVAS_HEIGHT / 4 * 3,
+              new Font("Courier", Font.PLAIN, 40));
         }
-
-        // draw the alien projectiles
-        for (Projectile projectile : alienProjectiles) {
-          if (projectile.isVisible()) {
-            projectile.drawMovingProjectile(g2d);
-          }
+          // --------------------------------------------- GAME OVER
+          // ---------------------------------------------
+        case "GAME_OVER" -> {
+          g2d.setColor(Color.WHITE);
+          Utilities.drawCenteredString(
+              g,
+              "GAME OVER",
+              CANVAS_WIDTH,
+              CANVAS_HEIGHT / 2,
+              new Font("Algerian", Font.PLAIN, 120));
         }
-
-        // draw PowerUps
-        for (PowerUp powerUp : powerUps) {
-          if (powerUp.isVisible()) {
-            powerUp.drawThisPowerUp(g2d, this);
-          }
+          // --------------------------------------------- GAME WON
+          // ---------------------------------------------
+        case "GAME_WON" -> {
+          g2d.setColor(Color.WHITE);
+          Utilities.drawCenteredString(
+              g, "YOU WON", CANVAS_WIDTH, CANVAS_HEIGHT / 2, new Font("Algerian", Font.PLAIN, 120));
         }
+          // --------------------------------------------- PLAYING
+          // ---------------------------------------------
+        case "PLAYING" -> {
+          // draw the space ship and any equipped powerups
+          g2d.drawImage(spaceShip.getImage(), spaceShip.getX(), spaceShip.getY(), this);
+          spaceShip.drawEquippedPowerUps(g2d, this);
 
-        // draw player lives
-        g2d.setColor(Color.GREEN);
-        g2d.setFont(new Font("Courier", Font.BOLD, 18));
-        g2d.drawString("LIVES: " + Utilities.toTicks(spaceShip.getLives()), 20, CANVAS_HEIGHT - 20);
+          // draw the aliens
+          for (Alien alien : aliens) {
+            if (alien.isVisible()) {
+              alien.drawThisAlien(g2d, this);
+            }
+          }
+
+          // draw the player projectiles
+          for (Projectile projectile : playerProjectiles) {
+            if (projectile.isVisible()) {
+              projectile.drawMovingProjectile(g2d);
+            }
+          }
+
+          // draw the alien projectiles
+          for (Projectile projectile : alienProjectiles) {
+            if (projectile.isVisible()) {
+              projectile.drawMovingProjectile(g2d);
+            }
+          }
+
+          // draw PowerUps
+          for (PowerUp powerUp : powerUps) {
+            if (powerUp.isVisible()) {
+              powerUp.drawThisPowerUp(g2d, this);
+            }
+          }
+
+          // draw player lives
+          g2d.setColor(Color.GREEN);
+          g2d.setFont(new Font("Courier", Font.BOLD, 18));
+          g2d.drawString(
+              "LIVES: " + Utilities.toTicks(spaceShip.getLives()), 20, CANVAS_HEIGHT - 20);
+        }
       }
     }
   }
 
   // -------------------------------- FUNCTIONS  ---------------------------------
+
+  public void updateGameObjects() {
+    quadtree.clear();
+    updateAliens();
+    updatePlayerProjectiles();
+    updateAlienProjectiles();
+    updatePowerUps();
+  }
 
   /*
    * Calculates visibility for projectile in playerProjectiles, updating their positions if they are
@@ -380,13 +387,17 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
         playerProjectiles.get(i).setVisibility(false);
       }
 
-      // move or remove the projectile from the ArrayList if visibile is true or false respectively
+      // move or remove the projectile from the ArrayList if visible is true or false respectively
       if (playerProjectiles.get(i).isVisible()) {
         playerProjectiles.get(i).moveProjectile();
       } else {
         playerProjectiles.remove(i);
         i--;
       }
+    }
+
+    for (Projectile projectile : playerProjectiles) {
+      quadtree.insert(projectile);
     }
   }
 
@@ -422,33 +433,37 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
 
     // iterate through alien objects in aliens
     for (int i = 0; i < aliens.size(); i++) {
-      if (aliens.get(i).isVisible()) {
-        // if any aliens have reached the location of the player, the game is over
-        if (aliens.get(i).getY() + aliens.get(i).getH() >= CANVAS_HEIGHT - 110) {
-          spaceShip.removeLives(spaceShip.getLives());
-        }
-        // if the aliens have reached the side edges, change the direction of all the aliens
-        else if (aliens.get(i).getX() + aliens.get(i).getW() >= CANVAS_WIDTH) {
-          alienHorizontalDirection = -1;
-        } else if (aliens.get(i).getX() <= 0) {
-          alienHorizontalDirection = 1;
-        }
-        // change the x and y coordinates of the alien accordingly
-        aliens.get(i).moveThisAlien(alienHorizontalDirection);
-
-        // random chance that the alien will fire a projectile
-        double chance = random.nextDouble();
-        if (chance < BASIC_ALIEN_CHANCE_OF_ATTACK) {
-          sm.alienFireLaser.play();
-          alienProjectiles.add(aliens.get(i).fireProjectile());
-        }
-      }
       // play death sound effect and remove this alien from the ArrayList
-      else {
+      if (!aliens.get(i).isVisible()) {
         sm.alienDeath.play();
         aliens.remove(i);
         i--;
+        continue;
       }
+
+      // if any aliens have reached the location of the player, the game is over
+      if (aliens.get(i).getY() + aliens.get(i).getH() >= CANVAS_HEIGHT - 110) {
+        spaceShip.removeLives(spaceShip.getLives());
+      }
+      // if the aliens have reached the side edges, change the direction of all the aliens
+      else if (aliens.get(i).getX() + aliens.get(i).getW() >= CANVAS_WIDTH) {
+        alienHorizontalDirection = -1;
+      } else if (aliens.get(i).getX() <= 0) {
+        alienHorizontalDirection = 1;
+      }
+
+      // change the x and y coordinates of the alien accordingly
+      aliens.get(i).moveThisAlien(alienHorizontalDirection);
+
+      // random chance that the alien will fire a projectile
+      if (random.nextDouble() < BASIC_ALIEN_CHANCE_OF_ATTACK) {
+        sm.alienFireLaser.play();
+        alienProjectiles.add(aliens.get(i).fireProjectile());
+      }
+    }
+
+    for (Alien alien : aliens) {
+      quadtree.insert(alien);
     }
   }
 
@@ -485,16 +500,24 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
   }
 
   private void checkPlayerProjectileCollisions() {
-    for (Projectile projectile : playerProjectiles) {
-      for (Alien alien : aliens) {
-        if (Utilities.detectCollision(projectile.getOuterHitBox(), alien.getOuterHitBox())) {
-          projectile.setVisibility(false);
-          alien.decrementLives(1);
-          if (alien.getLives() <= 0) {
-            alien.setVisibility(false);
-          } else {
-            sm.alienHitButNotKilled.play();
-          }
+    for (Alien alien : aliens) {
+      List<GameObject> possibleCollisions = quadtree.retrieve(alien.getOuterHitBox());
+      for (GameObject possibleCollision : possibleCollisions) {
+        if (!(possibleCollision instanceof Projectile projectile)) {
+          continue;
+        }
+
+        if (!Utilities.detectCollision(projectile.getOuterHitBox(), alien.getOuterHitBox())) {
+          continue;
+        }
+
+        projectile.setVisibility(false);
+        alien.decrementLives(1);
+
+        if (alien.getLives() <= 0) {
+          alien.setVisibility(false);
+        } else {
+          sm.alienHitButNotKilled.play();
         }
       }
     }
@@ -503,8 +526,7 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
   private void checkAlienProjectileCollisions() {
     for (Projectile projectile : alienProjectiles) {
       if (Utilities.detectCollision(spaceShip.getInnerCenterHitBox(), projectile.getOuterHitBox())
-          || Utilities.detectCollision(
-              spaceShip.getInnerRearHitBox(), projectile.getOuterHitBox())) {
+          || Utilities.detectCollision(spaceShip.getInnerRearHitBox(), projectile.getOuterHitBox())) {
         if (spaceShip.getLives() > 1) {
           sm.oof.play();
         }
@@ -578,9 +600,9 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
     if (gameState.equals("MAIN_MENU")) {
 
       g2d.setColor(Color.WHITE);
-      g2d.fill(new Rectangle2D.Double(CANVAS_WIDTH / 2 - 75, CANVAS_HEIGHT / 2, 150, 30));
-      g2d.fill(new Rectangle2D.Double(CANVAS_WIDTH / 2 - 75, CANVAS_HEIGHT / 2 - 100, 150, 30));
-      g2d.fill(new Rectangle2D.Double(CANVAS_WIDTH / 2 - 75, CANVAS_HEIGHT / 2 + 100, 150, 30));
+      g2d.fill(new Rectangle2D.Double((double) CANVAS_WIDTH / 2 - 75, (double) CANVAS_HEIGHT / 2, 150, 30));
+      g2d.fill(new Rectangle2D.Double((double) CANVAS_WIDTH / 2 - 75, (double) CANVAS_HEIGHT / 2 - 100, 150, 30));
+      g2d.fill(new Rectangle2D.Double((double) CANVAS_WIDTH / 2 - 75, (double) CANVAS_HEIGHT / 2 + 100, 150, 30));
 
       g2d.setColor(Color.BLACK);
       g2d.setFont(new Font("Monospaced", Font.BOLD, 18));
@@ -618,9 +640,9 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
         || gameState.equals("PAUSED")) {
 
       g2d.setColor(Color.WHITE);
-      g2d.fill(new Rectangle2D.Double(CANVAS_WIDTH / 2 - 250, CANVAS_HEIGHT / 2, 100, 30));
-      g2d.fill(new Rectangle2D.Double(CANVAS_WIDTH / 2 - 75, CANVAS_HEIGHT / 2, 150, 30));
-      g2d.fill(new Rectangle2D.Double(CANVAS_WIDTH / 2 + 150, CANVAS_HEIGHT / 2, 100, 30));
+      g2d.fill(new Rectangle2D.Double((double) CANVAS_WIDTH / 2 - 250, (double) CANVAS_HEIGHT / 2, 100, 30));
+      g2d.fill(new Rectangle2D.Double((double) CANVAS_WIDTH / 2 - 75, (double) CANVAS_HEIGHT / 2, 150, 30));
+      g2d.fill(new Rectangle2D.Double((double) CANVAS_WIDTH / 2 + 150, (double) CANVAS_HEIGHT / 2, 100, 30));
 
       g2d.setColor(Color.BLACK);
       g2d.setFont(new Font("Monospaced", Font.BOLD, 18));

@@ -15,7 +15,7 @@ import java.awt.image.ImageObserver;
 import java.lang.*;
 import java.io.IOException;
 
-public class PowerUp {
+public class PowerUp implements GameObject {
   
   private final int x;
   private int y;
