@@ -1,13 +1,8 @@
 /**
- * Ryan Hecht
- * Mr. Corea
- * ICS4U1-1B
- * First Created: 2020-11-12
- * Last Edited: 2020-11-18
+ * Ryan Hecht Mr. Corea ICS4U1-1B First Created: 2020-11-12 Last Edited: 2020-11-18
  *
- * This is the class for the spaceship that is moved by the player.
+ * <p>This is the class for the spaceship that is moved by the player.
  */
-
 import java.awt.*;
 import java.awt.geom.*;
 import javax.swing.ImageIcon;
@@ -41,11 +36,15 @@ public class SpaceShip implements GameObject {
     this.x = x;
     this.y = y;
     loadImage();
-    this.w = image.getWidth(null)/imageScaleDivisor;
-    this.h = image.getHeight(null)/imageScaleDivisor;
+    this.w = image.getWidth(null) / imageScaleDivisor;
+    this.h = image.getHeight(null) / imageScaleDivisor;
     this.image = image.getScaledInstance(this.w, this.h, Image.SCALE_DEFAULT);
-    this.innerCenterHitBox = new Rectangle2D.Double(this.x + (double) this.w /4 + 8, this.y, (double) this.w /2 - 16, this.h);
-    this.innerRearHitBox = new Rectangle2D.Double(this.x + 6, this.y + (double) this.h /2, this.w-12, (double) this.h /2);
+    this.innerCenterHitBox =
+        new Rectangle2D.Double(
+            this.x + (double) this.w / 4 + 8, this.y, (double) this.w / 2 - 16, this.h);
+    this.innerRearHitBox =
+        new Rectangle2D.Double(
+            this.x + 6, this.y + (double) this.h / 2, this.w - 12, (double) this.h / 2);
     this.equippedPowerUps = new ArrayList<PowerUp>();
   }
 
@@ -53,38 +52,43 @@ public class SpaceShip implements GameObject {
    * Loads an image from the ./Graphics folder.
    */
   private void loadImage() {
-      try {
-          String basePath = System.getProperty("user.dir");
-          String imagePath = "";
+    try {
+      String basePath = System.getProperty("user.dir");
+      String imagePath = "";
 
-          if (basePath.endsWith("SourceCode")) {
-              imagePath = basePath + "/../Graphics/SpaceShipImage.png";
-          } else if (basePath.endsWith("src")) {
-              imagePath = basePath + "/../Graphics/SpaceShipImage.png";
-          } else {
-              imagePath = basePath + "/Graphics/SpaceShipImage.png";
-          }
-
-          ImageIcon icon = new ImageIcon(imagePath);
-          image = icon.getImage();
-
-          if (image.getWidth(null) == -1 || image.getHeight(null) == -1) {
-              throw new IOException("Invalid image dimensions: Width and height must be non-zero.");
-          }
-
-      } catch (NullPointerException | IOException e) {
-          System.err.println("Error loading the SpaceShip image: " + e.getMessage());
-          System.exit(1);
+      if (basePath.endsWith("SourceCode")) {
+        imagePath = basePath + "/../Graphics/SpaceShipImage.png";
+      } else if (basePath.endsWith("src")) {
+        imagePath = basePath + "/../Graphics/SpaceShipImage.png";
+      } else {
+        imagePath = basePath + "/Graphics/SpaceShipImage.png";
       }
-  }
 
+      ImageIcon icon = new ImageIcon(imagePath);
+      image = icon.getImage();
+
+      if (image.getWidth(null) == -1 || image.getHeight(null) == -1) {
+        throw new IOException("Invalid image dimensions: Width and height must be non-zero.");
+      }
+
+    } catch (NullPointerException | IOException e) {
+      System.err.println("Error loading the SpaceShip image: " + e.getMessage());
+      System.exit(1);
+    }
+  }
 
   /*
    * Instantiates a new projectile and returns it
    */
   public Projectile fireLaser() {
-    return new Projectile(this.x + (int)(this.innerRearHitBox.getWidth()/2.0) + 3, this.y-20,
-                                      5, 20, Color.WHITE, -10);
+    return new Projectile(
+        Projectile.ProjectileSource.PLAYER,
+        this.x + (int) (this.innerRearHitBox.getWidth() / 2.0) + 3,
+        this.y - 20,
+        5,
+        20,
+        Color.WHITE,
+        -10);
   }
 
   /*
@@ -92,7 +96,7 @@ public class SpaceShip implements GameObject {
    */
   public void activatePowerUp(PowerUp powerUp) {
     // if a powerup of the same type is already in the array, just reset the duration
-    for (PowerUp p: equippedPowerUps) {
+    for (PowerUp p : equippedPowerUps) {
       if (p.getIdentifier().equals(powerUp.getIdentifier())) {
         p.recordTimeActivated();
         return;
@@ -108,14 +112,15 @@ public class SpaceShip implements GameObject {
    */
   public void updateEquippedPowerUps(long currentTime, SoundManager sm) {
     for (int i = 0; i < this.equippedPowerUps.size(); i++) {
-      if (currentTime - this.equippedPowerUps.get(i).getTimeActivated() > this.equippedPowerUps.get(i).getDuration()) {
+      if (currentTime - this.equippedPowerUps.get(i).getTimeActivated()
+          > this.equippedPowerUps.get(i).getDuration()) {
         this.equippedPowerUps.get(i).playDeActivationSound(sm);
         this.equippedPowerUps.get(i).deActivate(this);
         this.equippedPowerUps.remove(i);
         i--;
       }
       // Special case for equippable powerups
-      else if (this.equippedPowerUps.get(i).getIdentifier().equals("ForceFieldPowerUp")) {
+      else if (this.equippedPowerUps.get(i).getIdentifier().equals(ForceFieldPowerUp.IDENTIFIER)) {
         if (this.lives < this.equippedPowerUps.get(i).getSpecialValue()) {
           this.equippedPowerUps.get(i).playDeActivationSound(sm);
           this.equippedPowerUps.get(i).deActivate(this);
@@ -131,7 +136,7 @@ public class SpaceShip implements GameObject {
    */
   public void drawEquippedPowerUps(Graphics2D g2d, ImageObserver observer) {
     for (PowerUp powerUp : this.equippedPowerUps) {
-      if (powerUp.getIdentifier().equals("ForceFieldPowerUp")) {
+      if (powerUp.getIdentifier().equals(ForceFieldPowerUp.IDENTIFIER)) {
         if (this.lives >= powerUp.getSpecialValue()) {
           powerUp.drawThisPowerUp(g2d, observer, this.x, this.y - 40);
         }
@@ -142,14 +147,24 @@ public class SpaceShip implements GameObject {
   // Moves the SpaceShip horizontally
   public void moveLeft() {
     x -= speed;
-    this.innerCenterHitBox = new Rectangle2D.Double(this.x + (double) this.w /4 + 8, this.y, (double) this.w /2 - 16, this.h);
-    this.innerRearHitBox = new Rectangle2D.Double(this.x + 6, this.y + (double) this.h /2, this.w-12, (double) this.h /2);
+    this.innerCenterHitBox =
+        new Rectangle2D.Double(
+            this.x + (double) this.w / 4 + 8, this.y, (double) this.w / 2 - 16, this.h);
+    this.innerRearHitBox =
+        new Rectangle2D.Double(
+            this.x + 6, this.y + (double) this.h / 2, this.w - 12, (double) this.h / 2);
   }
+
   public void moveRight() {
     x += speed;
-    this.innerCenterHitBox = new Rectangle2D.Double(this.x + (double) this.w /4 + 8, this.y, (double) this.w /2 - 16, this.h);
-    this.innerRearHitBox = new Rectangle2D.Double(this.x + 6, this.y + (double) this.h /2, this.w-12, (double) this.h /2);
+    this.innerCenterHitBox =
+        new Rectangle2D.Double(
+            this.x + (double) this.w / 4 + 8, this.y, (double) this.w / 2 - 16, this.h);
+    this.innerRearHitBox =
+        new Rectangle2D.Double(
+            this.x + 6, this.y + (double) this.h / 2, this.w - 12, (double) this.h / 2);
   }
+
   /*
    * Sets the speed of the SpaceShip to the given speed in pixels
    */
@@ -172,6 +187,7 @@ public class SpaceShip implements GameObject {
   public void addLives(int lives) {
     this.lives += lives;
   }
+
   public void removeLives(int lives) {
     this.lives -= lives;
   }
@@ -182,30 +198,39 @@ public class SpaceShip implements GameObject {
   public int getX() {
     return x;
   }
+
   public int getY() {
     return y;
   }
+
   public int getW() {
     return w;
   }
+
   public int getH() {
     return h;
   }
+
   public int getSpeed() {
     return speed;
   }
+
   public Image getImage() {
     return image;
   }
+
   public Rectangle2D.Double getInnerCenterHitBox() {
     return innerCenterHitBox;
   }
+
   public Rectangle2D.Double getInnerRearHitBox() {
     return innerRearHitBox;
   }
+
   public int getFireDelayMillis() {
     return fireDelayMillis;
   }
+
   public int getLives() {
     return lives;
   }
@@ -214,8 +239,14 @@ public class SpaceShip implements GameObject {
   public Rectangle2D getOuterHitBox() {
     double minX = Math.min(innerCenterHitBox.getX(), innerRearHitBox.getX());
     double minY = Math.min(innerCenterHitBox.getY(), innerRearHitBox.getY());
-    double maxX = Math.max(innerCenterHitBox.getX() + innerCenterHitBox.getWidth(), innerRearHitBox.getX() + innerRearHitBox.getWidth());
-    double maxY = Math.max(innerCenterHitBox.getY() + innerCenterHitBox.getHeight(), innerRearHitBox.getY() + innerRearHitBox.getHeight());
+    double maxX =
+        Math.max(
+            innerCenterHitBox.getX() + innerCenterHitBox.getWidth(),
+            innerRearHitBox.getX() + innerRearHitBox.getWidth());
+    double maxY =
+        Math.max(
+            innerCenterHitBox.getY() + innerCenterHitBox.getHeight(),
+            innerRearHitBox.getY() + innerRearHitBox.getHeight());
 
     return new Rectangle2D.Double(minX, minY, maxX - minX, maxY - minY);
   }

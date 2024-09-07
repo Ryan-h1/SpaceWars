@@ -2,16 +2,17 @@ import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 
 public class Quadtree {
-  private static final int MAX_OBJECTS = 4; // Max objects before splitting (4 gives us QUADrants)
-  private static final int MAX_LEVELS = 5; // Max depth of the three
+  private static final int MAX_OBJECTS = 8;
+  private static final int MAX_LEVELS = 6;
 
   private final List<GameObject> objects = new ArrayList<>();
-  private final Quadtree[] nodes = new Quadtree[MAX_OBJECTS];
+  private final Quadtree[] nodes = new Quadtree[4];
 
-  private int level;
-  private Rectangle bounds;
+  private final int level;
+  private final Rectangle bounds;
 
   public Quadtree(int level, Rectangle bounds) {
     this.level = level;
@@ -21,7 +22,7 @@ public class Quadtree {
   /** Clears the quadtree */
   public void clear() {
     objects.clear();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < nodes.length; i++) {
       if (nodes[i] != null) {
         nodes[i].clear();
         nodes[i] = null;
@@ -29,38 +30,44 @@ public class Quadtree {
     }
   }
 
-  /** Splits a node into four sub nodes */
+  /** Splits a node into four subnodes */
   private void split() {
     int subWidth = (int) (bounds.getWidth() / 2);
     int subHeight = (int) (bounds.getHeight() / 2);
     int x = (int) bounds.getX();
     int y = (int) bounds.getY();
 
-    nodes[0] = new Quadtree(level + 1, new Rectangle(x + subWidth, y, subWidth, subHeight)); // Top right
-    nodes[1] = new Quadtree(level + 1, new Rectangle(x, y, subWidth, subHeight));            // Top left
-    nodes[2] = new Quadtree(level + 1, new Rectangle(x, y + subHeight, subWidth, subHeight));// Bottom left
-    nodes[3] = new Quadtree(level + 1, new Rectangle(x + subWidth, y + subHeight, subWidth, subHeight)); // Bottom right
+    nodes[0] = new Quadtree(level + 1, new Rectangle(x + subWidth, y, subWidth, subHeight)); // Top-right
+    nodes[1] = new Quadtree(level + 1, new Rectangle(x, y, subWidth, subHeight));            // Top-left
+    nodes[2] = new Quadtree(level + 1, new Rectangle(x, y + subHeight, subWidth, subHeight));// Bottom-left
+    nodes[3] = new Quadtree(level + 1, new Rectangle(x + subWidth, y + subHeight, subWidth, subHeight)); // Bottom-right
   }
 
+  // Determines which node the object belongs to. -1 means it doesn't fit completely in a node.
   private int getIndex(Rectangle2D outerHitBox) {
     int index = -1;
     double verticalMidpoint = bounds.getX() + (bounds.getWidth() / 2);
     double horizontalMidpoint = bounds.getY() + (bounds.getHeight() / 2);
 
+    // Object can fit within the top quadrants
     boolean topQuadrant = outerHitBox.getY() < horizontalMidpoint && outerHitBox.getY() + outerHitBox.getHeight() < horizontalMidpoint;
+    // Object can fit within the bottom quadrants
     boolean bottomQuadrant = outerHitBox.getY() > horizontalMidpoint;
 
+    // Object can fit within the left quadrants
     if (outerHitBox.getX() < verticalMidpoint && outerHitBox.getX() + outerHitBox.getWidth() < verticalMidpoint) {
       if (topQuadrant) {
-        index = 1; // Top left
+        index = 1; // Top-left
       } else if (bottomQuadrant) {
-        index = 2; // Bottom left
+        index = 2; // Bottom-left
       }
-    } else if (outerHitBox.getX() > verticalMidpoint) {
+    }
+    // Object can fit within the right quadrants
+    else if (outerHitBox.getX() > verticalMidpoint) {
       if (topQuadrant) {
-        index = 0; // Top right
+        index = 0; // Top-right
       } else if (bottomQuadrant) {
-        index = 3; // Bottom right
+        index = 3; // Bottom-right
       }
     }
 
@@ -85,13 +92,13 @@ public class Quadtree {
         split();
       }
 
-      int i = 0;
-      while (i < objects.size()) {
-        int index = getIndex(objects.get(i).getOuterHitBox());
+      Iterator<GameObject> iterator = objects.iterator();
+      while (iterator.hasNext()) {
+        GameObject gameObject = iterator.next();
+        int index = getIndex(gameObject.getOuterHitBox());
         if (index != -1) {
-          nodes[index].insert(objects.remove(i));
-        } else {
-          i++;
+          nodes[index].insert(gameObject);
+          iterator.remove();  // Remove from current node
         }
       }
     }
@@ -99,11 +106,15 @@ public class Quadtree {
 
   // Retrieve all objects that could collide with the given object
   public List<GameObject> retrieve(Rectangle2D outerHitBox) {
-    int index = getIndex(outerHitBox);
     List<GameObject> foundObjects = new ArrayList<>(objects);
+    int index = getIndex(outerHitBox);
 
-    // If there are child nodes, retrieve from the appropriate one
-    if (index != -1 && nodes[0] != null) {
+    // Retrieve from all relevant nodes if the object spans multiple quadrants
+    if (index == -1 && nodes[0] != null) {
+      for (Quadtree node : nodes) {
+        foundObjects.addAll(node.retrieve(outerHitBox));
+      }
+    } else if (index != -1 && nodes[0] != null) {
       foundObjects.addAll(nodes[index].retrieve(outerHitBox));
     }
 

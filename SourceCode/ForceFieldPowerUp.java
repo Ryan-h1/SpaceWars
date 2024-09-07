@@ -16,8 +16,9 @@ import java.awt.geom.*;
 public class ForceFieldPowerUp extends PowerUp{
   
   // Constants
+  public static final String IDENTIFIER = "ForceFieldPowerUp";
+
   private static final int DURATION_MILLIS = 10000;
-  private static final String IDENTIFIER = "ForceFieldPowerUp";
   private int livesAtActivation;
   
   public ForceFieldPowerUp(int x, int y, int imageScaleDivisor) {
@@ -63,5 +64,4 @@ public class ForceFieldPowerUp extends PowerUp{
   public int getSpecialValue() {
     return this.livesAtActivation;
   }
-
 }

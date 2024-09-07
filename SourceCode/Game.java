@@ -22,6 +22,7 @@ import java.lang.*;
 import java.util.List;
 
 public class Game extends JFrame implements ActionListener, KeyListener, Constants {
+  private final Quadtree quadtree;
 
   // The custom drawing canvas (extends JPanel)
   private final DrawCanvas canvas = new DrawCanvas();
@@ -32,14 +33,11 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
   // Set of all the keys that are currently pressed
   private final Set<String> keysPressed = new HashSet<>();
 
-  // Quadtree to store all objects
-  private final Quadtree quadtree = new Quadtree(0, new Rectangle(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT));
-
   // Containers for objects
-  private List<Projectile> playerProjectiles;
-  private List<Projectile> alienProjectiles;
-  private List<Alien> aliens;
-  private List<PowerUp> powerUps;
+  private Set<Projectile> playerProjectiles;
+  private Set<Projectile> alienProjectiles;
+  private Set<Alien> aliens;
+  private Set<PowerUp> powerUps;
 
   // Utilities
   private final SoundManager sm = new SoundManager();
@@ -57,8 +55,7 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
    * Constructor
    */
   public Game() {
-
-    // Initialize some game variables
+    quadtree = new Quadtree(0, new Rectangle(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT));
     timer = new Timer(REFRESH_MILLI, this);
     gameState = "MAIN_MENU";
     spawnLevel = 1;
@@ -124,10 +121,10 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
     spawnLevel = 1;
 
     // containers for objects
-    aliens = new ArrayList<>();
-    playerProjectiles = new ArrayList<>();
-    alienProjectiles = new ArrayList<>();
-    powerUps = new ArrayList<>();
+    aliens = new HashSet<>();
+    playerProjectiles = new HashSet<>();
+    alienProjectiles = new HashSet<>();
+    powerUps = new HashSet<>();
 
     // loads the aliens of the specified spawnLevel into the array
     loadAliens();
@@ -167,6 +164,9 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
 
     // update containers of objects
     updateGameObjects();
+
+    // recalculate the quadtree with the newly changed objects
+    updateQuadTree();
 
     // check the player's equipped power ups
     spaceShip.updateEquippedPowerUps(System.currentTimeMillis(), sm);
@@ -284,12 +284,12 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
               CANVAS_HEIGHT / 2,
               new Font("Algerian", Font.ITALIC, 120));
         }
-          // --------------------------------------------- INSTRUCTIONS
-          // ---------------------------------------------
+        // --------------------------------------------- INSTRUCTIONS
+        // ---------------------------------------------
         case "INSTRUCTIONS" -> drawInstructions(g2d);
 
-          // --------------------------------------------- PAUSED
-          // ---------------------------------------------
+        // --------------------------------------------- PAUSED
+        // ---------------------------------------------
         case "PAUSED" -> {
           g2d.setColor(Color.WHITE);
           Utilities.drawCenteredString(
@@ -301,8 +301,8 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
               CANVAS_HEIGHT / 4 * 3,
               new Font("Courier", Font.PLAIN, 40));
         }
-          // --------------------------------------------- GAME OVER
-          // ---------------------------------------------
+        // --------------------------------------------- GAME OVER
+        // ---------------------------------------------
         case "GAME_OVER" -> {
           g2d.setColor(Color.WHITE);
           Utilities.drawCenteredString(
@@ -312,15 +312,15 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
               CANVAS_HEIGHT / 2,
               new Font("Algerian", Font.PLAIN, 120));
         }
-          // --------------------------------------------- GAME WON
-          // ---------------------------------------------
+        // --------------------------------------------- GAME WON
+        // ---------------------------------------------
         case "GAME_WON" -> {
           g2d.setColor(Color.WHITE);
           Utilities.drawCenteredString(
               g, "YOU WON", CANVAS_WIDTH, CANVAS_HEIGHT / 2, new Font("Algerian", Font.PLAIN, 120));
         }
-          // --------------------------------------------- PLAYING
-          // ---------------------------------------------
+        // --------------------------------------------- PLAYING
+        // ---------------------------------------------
         case "PLAYING" -> {
           // draw the space ship and any equipped powerups
           g2d.drawImage(spaceShip.getImage(), spaceShip.getX(), spaceShip.getY(), this);
@@ -366,12 +366,41 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
 
   // -------------------------------- FUNCTIONS  ---------------------------------
 
-  public void updateGameObjects() {
-    quadtree.clear();
+  private void updateGameObjects() {
     updateAliens();
     updatePlayerProjectiles();
     updateAlienProjectiles();
     updatePowerUps();
+  }
+
+  private void updateQuadTree() {
+    quadtree.clear();
+
+    for (Alien alien : aliens) {
+      if (alien.isVisible()) {
+        quadtree.insert(alien);
+      }
+    }
+
+    for (Projectile projectile : playerProjectiles) {
+      if (projectile.isVisible()) {
+        quadtree.insert(projectile);
+      }
+    }
+
+    for (Projectile projectile : alienProjectiles) {
+      if (projectile.isVisible()) {
+        quadtree.insert(projectile);
+      }
+    }
+
+    for (PowerUp powerUp : powerUps) {
+      if (powerUp.isVisible()) {
+        quadtree.insert(powerUp);
+      }
+    }
+
+    quadtree.insert(spaceShip);
   }
 
   /*
@@ -379,25 +408,24 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
    * visible and removing them from the ArrayList if they aren't.
    */
   public void updatePlayerProjectiles() {
+    Iterator<Projectile> iterator = playerProjectiles.iterator();
+    while (iterator.hasNext()) {
+      Projectile playerProjectile = iterator.next();
 
-    for (int i = 0; i < playerProjectiles.size(); i++) {
       // set visibility
-      if (playerProjectiles.get(i).getY() <= 0
-          || playerProjectiles.get(i).getY() + playerProjectiles.get(i).getH() >= CANVAS_HEIGHT) {
-        playerProjectiles.get(i).setVisibility(false);
+      if (playerProjectile.getY() <= 0
+          || playerProjectile.getY() + playerProjectile.getH() >= CANVAS_HEIGHT) {
+        playerProjectile.setVisibility(false);
       }
 
-      // move or remove the projectile from the ArrayList if visible is true or false respectively
-      if (playerProjectiles.get(i).isVisible()) {
-        playerProjectiles.get(i).moveProjectile();
-      } else {
-        playerProjectiles.remove(i);
-        i--;
+      // remove the projectile from the set if it's no longer visible
+      if (!playerProjectile.isVisible()) {
+        iterator.remove();
+        continue;
       }
-    }
 
-    for (Projectile projectile : playerProjectiles) {
-      quadtree.insert(projectile);
+      // move the projectile
+      playerProjectile.moveProjectile();
     }
   }
 
@@ -406,22 +434,22 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
    * visible and removing them from the ArrayList if they aren't.
    */
   public void updateAlienProjectiles() {
+    Iterator<Projectile> iterator = alienProjectiles.iterator();
+    while (iterator.hasNext()) {
+      Projectile alienProjectile = iterator.next();
 
-    // iterate through projectile objects in alienProjectiles
-    for (int i = 0; i < alienProjectiles.size(); i++) {
       // set visibility
-      if (alienProjectiles.get(i).getY() <= 0
-          || alienProjectiles.get(i).getY() + alienProjectiles.get(i).getH() >= CANVAS_HEIGHT) {
-        alienProjectiles.get(i).setVisibility(false);
+      if (alienProjectile.getY() <= 0
+          || alienProjectile.getY() + alienProjectile.getH() >= CANVAS_HEIGHT) {
+        alienProjectile.setVisibility(false);
       }
 
-      // move or remove the projectile from the ArrayList if visibile is true or false respectively
-      if (alienProjectiles.get(i).isVisible()) {
-        alienProjectiles.get(i).moveProjectile();
-      } else {
-        alienProjectiles.remove(i);
-        i--;
+      if (!alienProjectile.isVisible()) {
+        iterator.remove();
+        continue;
       }
+
+      alienProjectile.moveProjectile();
     }
   }
 
@@ -432,38 +460,36 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
   public void updateAliens() {
 
     // iterate through alien objects in aliens
-    for (int i = 0; i < aliens.size(); i++) {
-      // play death sound effect and remove this alien from the ArrayList
-      if (!aliens.get(i).isVisible()) {
+    Iterator<Alien> iterator = aliens.iterator();
+    while (iterator.hasNext()) {
+      Alien alien = iterator.next();
+
+      // kill the alien
+      if (!alien.isVisible()) {
         sm.alienDeath.play();
-        aliens.remove(i);
-        i--;
+        iterator.remove();
         continue;
       }
 
       // if any aliens have reached the location of the player, the game is over
-      if (aliens.get(i).getY() + aliens.get(i).getH() >= CANVAS_HEIGHT - 110) {
+      if (alien.getY() + alien.getH() >= CANVAS_HEIGHT - 110) {
         spaceShip.removeLives(spaceShip.getLives());
       }
       // if the aliens have reached the side edges, change the direction of all the aliens
-      else if (aliens.get(i).getX() + aliens.get(i).getW() >= CANVAS_WIDTH) {
+      else if (alien.getX() + alien.getW() >= CANVAS_WIDTH) {
         alienHorizontalDirection = -1;
-      } else if (aliens.get(i).getX() <= 0) {
+      } else if (alien.getX() <= 0) {
         alienHorizontalDirection = 1;
       }
 
       // change the x and y coordinates of the alien accordingly
-      aliens.get(i).moveThisAlien(alienHorizontalDirection);
+      alien.moveThisAlien(alienHorizontalDirection);
 
       // random chance that the alien will fire a projectile
       if (random.nextDouble() < BASIC_ALIEN_CHANCE_OF_ATTACK) {
         sm.alienFireLaser.play();
-        alienProjectiles.add(aliens.get(i).fireProjectile());
+        alienProjectiles.add(alien.fireProjectile());
       }
-    }
-
-    for (Alien alien : aliens) {
-      quadtree.insert(alien);
     }
   }
 
@@ -474,19 +500,20 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
   public void updatePowerUps() {
 
     // iterate through powerUp objects in powerUps
-    for (int i = 0; i < powerUps.size(); i++) {
-      // set visibility to false if the powerup has fallen off the screen
-      if (powerUps.get(i).getY() + powerUps.get(i).getH() >= CANVAS_HEIGHT) {
-        powerUps.get(i).setVisibility(false);
+    Iterator<PowerUp> iterator = powerUps.iterator();
+    while (iterator.hasNext()) {
+      PowerUp powerUp = iterator.next();
+
+      if (powerUp.getY() + powerUp.getH() >= CANVAS_HEIGHT) {
+        powerUp.setVisibility(false);
       }
 
-      // change the x and y coordinates of the powerUp if it is still visible, else, remove it
-      if (powerUps.get(i).isVisible()) {
-        powerUps.get(i).movePowerUp();
-      } else {
-        powerUps.remove(i);
-        i--;
+      if (!powerUp.isVisible()) {
+        iterator.remove();
+        continue;
       }
+
+      powerUp.movePowerUp();
     }
   }
 
@@ -494,19 +521,25 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
    * Calculates collisions and sets the visibilities of objects accordingly
    */
   public void checkCollisions() {
-    checkPlayerProjectileCollisions();
-    checkAlienProjectileCollisions();
-    checkPowerUpCollisions();
+    checkAlienCollisions();
+    checkPlayerCollisions();
   }
 
-  private void checkPlayerProjectileCollisions() {
+  private void checkAlienCollisions() {
     for (Alien alien : aliens) {
       List<GameObject> possibleCollisions = quadtree.retrieve(alien.getOuterHitBox());
       for (GameObject possibleCollision : possibleCollisions) {
+        // If the object is not a projectile, then exit early
         if (!(possibleCollision instanceof Projectile projectile)) {
           continue;
         }
 
+        // If the projectile came from an alien, then exit early
+        if (projectile.getProjectileSource().equals(Projectile.ProjectileSource.ALIEN)) {
+          continue;
+        }
+
+        // If the project did not collide with the alien, then exit early
         if (!Utilities.detectCollision(projectile.getOuterHitBox(), alien.getOuterHitBox())) {
           continue;
         }
@@ -523,26 +556,34 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
     }
   }
 
-  private void checkAlienProjectileCollisions() {
-    for (Projectile projectile : alienProjectiles) {
-      if (Utilities.detectCollision(spaceShip.getInnerCenterHitBox(), projectile.getOuterHitBox())
-          || Utilities.detectCollision(spaceShip.getInnerRearHitBox(), projectile.getOuterHitBox())) {
-        if (spaceShip.getLives() > 1) {
-          sm.oof.play();
-        }
-        projectile.setVisibility(false);
-        spaceShip.removeLives(1);
-      }
-    }
-  }
+  private void checkPlayerCollisions() {
+    List<GameObject> possibleCollisions = quadtree.retrieve(spaceShip.getOuterHitBox());
+    for (GameObject possibleCollision : possibleCollisions) {
+      // If the GameObject is not a projectile, then don't worry about collisions
+      if (possibleCollision instanceof Projectile projectile) {
 
-  private void checkPowerUpCollisions() {
-    for (PowerUp powerUp : powerUps) {
-      if (Utilities.detectCollision(spaceShip.getInnerCenterHitBox(), powerUp.getOuterHitBox())
-          || Utilities.detectCollision(spaceShip.getInnerRearHitBox(), powerUp.getOuterHitBox())) {
-        spaceShip.activatePowerUp(powerUp);
-        powerUp.playActivationSound(sm);
-        powerUp.setVisibility(false);
+        // If the projectile came from the player, then don't worry about collisions
+        if (projectile.getProjectileSource().equals(Projectile.ProjectileSource.PLAYER)) {
+          continue;
+        }
+
+        if (Utilities.detectCollision(spaceShip.getInnerCenterHitBox(), projectile.getOuterHitBox())
+            || Utilities.detectCollision(
+                spaceShip.getInnerRearHitBox(), projectile.getOuterHitBox())) {
+          if (spaceShip.getLives() > 1) {
+            sm.oof.play();
+          }
+          projectile.setVisibility(false);
+          spaceShip.removeLives(1);
+        }
+      } else if (possibleCollision instanceof PowerUp powerUp) {
+        if (Utilities.detectCollision(spaceShip.getInnerCenterHitBox(), powerUp.getOuterHitBox())
+            || Utilities.detectCollision(
+                spaceShip.getInnerRearHitBox(), powerUp.getOuterHitBox())) {
+          spaceShip.activatePowerUp(powerUp);
+          powerUp.playActivationSound(sm);
+          powerUp.setVisibility(false);
+        }
       }
     }
   }
@@ -552,18 +593,16 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
    */
   public void randomlySpawnPowerUp() {
     double chance = random.nextDouble();
+    double spawnModifier = Math.random();
     if (chance < 0.00035) {
-      MachineGunPowerUp machineGunPowerUp =
-          new MachineGunPowerUp((int) (Math.random() * CANVAS_WIDTH - 150 + 1) + 100, 0, 10);
-      powerUps.add(machineGunPowerUp);
+      powerUps.add(
+          new MachineGunPowerUp((int) (spawnModifier * CANVAS_WIDTH - 150 + 1) + 100, 0, 10));
     } else if (chance < 0.0006) {
-      SpeedBoostPowerUp speedBoostPowerUp =
-          new SpeedBoostPowerUp((int) (Math.random() * CANVAS_WIDTH - 150 + 1) + 100, 0, 16);
-      powerUps.add(speedBoostPowerUp);
+      powerUps.add(
+          new SpeedBoostPowerUp((int) (spawnModifier * CANVAS_WIDTH - 150 + 1) + 100, 0, 16));
     } else if (chance < 0.001) {
-      ForceFieldPowerUp forceFieldPowerUp =
-          new ForceFieldPowerUp((int) (Math.random() * CANVAS_WIDTH - 150 + 1) + 100, 0, 12);
-      powerUps.add(forceFieldPowerUp);
+      powerUps.add(
+          new ForceFieldPowerUp((int) (spawnModifier * CANVAS_WIDTH - 150 + 1) + 100, 0, 12));
     }
   }
 
@@ -600,9 +639,15 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
     if (gameState.equals("MAIN_MENU")) {
 
       g2d.setColor(Color.WHITE);
-      g2d.fill(new Rectangle2D.Double((double) CANVAS_WIDTH / 2 - 75, (double) CANVAS_HEIGHT / 2, 150, 30));
-      g2d.fill(new Rectangle2D.Double((double) CANVAS_WIDTH / 2 - 75, (double) CANVAS_HEIGHT / 2 - 100, 150, 30));
-      g2d.fill(new Rectangle2D.Double((double) CANVAS_WIDTH / 2 - 75, (double) CANVAS_HEIGHT / 2 + 100, 150, 30));
+      g2d.fill(
+          new Rectangle2D.Double(
+              (double) CANVAS_WIDTH / 2 - 75, (double) CANVAS_HEIGHT / 2, 150, 30));
+      g2d.fill(
+          new Rectangle2D.Double(
+              (double) CANVAS_WIDTH / 2 - 75, (double) CANVAS_HEIGHT / 2 - 100, 150, 30));
+      g2d.fill(
+          new Rectangle2D.Double(
+              (double) CANVAS_WIDTH / 2 - 75, (double) CANVAS_HEIGHT / 2 + 100, 150, 30));
 
       g2d.setColor(Color.BLACK);
       g2d.setFont(new Font("Monospaced", Font.BOLD, 18));
@@ -640,9 +685,15 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
         || gameState.equals("PAUSED")) {
 
       g2d.setColor(Color.WHITE);
-      g2d.fill(new Rectangle2D.Double((double) CANVAS_WIDTH / 2 - 250, (double) CANVAS_HEIGHT / 2, 100, 30));
-      g2d.fill(new Rectangle2D.Double((double) CANVAS_WIDTH / 2 - 75, (double) CANVAS_HEIGHT / 2, 150, 30));
-      g2d.fill(new Rectangle2D.Double((double) CANVAS_WIDTH / 2 + 150, (double) CANVAS_HEIGHT / 2, 100, 30));
+      g2d.fill(
+          new Rectangle2D.Double(
+              (double) CANVAS_WIDTH / 2 - 250, (double) CANVAS_HEIGHT / 2, 100, 30));
+      g2d.fill(
+          new Rectangle2D.Double(
+              (double) CANVAS_WIDTH / 2 - 75, (double) CANVAS_HEIGHT / 2, 150, 30));
+      g2d.fill(
+          new Rectangle2D.Double(
+              (double) CANVAS_WIDTH / 2 + 150, (double) CANVAS_HEIGHT / 2, 100, 30));
 
       g2d.setColor(Color.BLACK);
       g2d.setFont(new Font("Monospaced", Font.BOLD, 18));
@@ -753,84 +804,9 @@ public class Game extends JFrame implements ActionListener, KeyListener, Constan
     g2d.drawString("here. That's all soldier, good luck on your mission.", 295, 621);
   }
 
-  /** Loads aliens into the ArrayList for the current spawnLevel */
-  public void loadAliens() {
-    // SPAWN 1
-    if (spawnLevel == 1) {
-      for (int row = 0; row < 3; row++) {
-        for (int col = 0; col < 10; col++) {
-          BasicAlien basicAlien = new BasicAlien((col + 1) * 110, (row + 1) * 100 - 60, 24);
-          aliens.add(basicAlien);
-        }
-      }
-    }
-    // SPAWN 2
-    else if (spawnLevel == 2) {
-      // first three rows
-      for (int row = 0; row < 3; row++) {
-        for (int col = 0; col < 10; col++) {
-          if (col == row || col == 10 - row) {
-            AdvancedAlien advancedAlien =
-                new AdvancedAlien((col + 1) * 110, (row + 1) * 100 - 60, 24);
-            aliens.add(advancedAlien);
-          } else {
-            BasicAlien basicAlien = new BasicAlien((col + 1) * 110, (row + 1) * 100 - 60, 24);
-            aliens.add(basicAlien);
-          }
-        }
-      }
-      // fourth row
-      for (int col = 0; col < 10; col++) {
-        AdvancedAlien advancedAlien = new AdvancedAlien((col + 1) * 110, -60 + 400, 24);
-        aliens.add(advancedAlien);
-      }
-    }
-    // SPAWN 3
-    else if (spawnLevel == 3) {
-      // first three row
-      for (int row = 0; row < 3; row++) {
-        for (int col = 0; col < 10; col++) {
-          if ((double) (col) % 2 == 0) {
-            FastAlien fastAlien = new FastAlien((col + 1) * 110, (row + 1) * 100 - 60, 24);
-            aliens.add(fastAlien);
-          } else {
-            BasicAlien basicAlien = new BasicAlien((col + 1) * 110, (row + 1) * 100 - 60, 24);
-            aliens.add(basicAlien);
-          }
-        }
-      }
-      // fourth row
-      for (int col = 0; col < 10; col++) {
-        if ((double) (col) % 2 == 0) {
-          FastAlien fastAlien = new FastAlien((col + 1) * 110, -60 + 400, 24);
-          aliens.add(fastAlien);
-        } else {
-          AdvancedAlien advancedAlien = new AdvancedAlien((col + 1) * 110, -60 + 400, 24);
-          aliens.add(advancedAlien);
-        }
-      }
-    }
-    // SPAWN 4
-    else if (spawnLevel == 4) {
-      // first two rows
-      for (int row = 0; row < 2; row++) {
-        for (int col = 0; col < 10; col++) {
-          if (col == 3 || col == 6) {
-            FastAlien fastAlien = new FastAlien((col + 1) * 110, (row + 1) * 100 - 60, 24);
-            aliens.add(fastAlien);
-          } else {
-            AdvancedAlien advancedAlien =
-                new AdvancedAlien((col + 1) * 110, (row + 1) * 100 - 60, 24);
-            aliens.add(advancedAlien);
-          }
-        }
-      }
-      // third row
-      for (int col = 0; col < 3; col++) {
-        TankAlien tankAlien = new TankAlien((col + 1) * 420 - 305, 400, 4);
-        aliens.add(tankAlien);
-      }
-    }
+  /** Loads aliens into the Set for the current spawnLevel */
+  private void loadAliens() {
+    this.aliens = new HashSet<>(AlienLevelFactory.createAlienLevel(this.spawnLevel));
   }
 
   // -------------------------MAIN METHOD-----------------------------------------
